@@ -3,4 +3,130 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
+
+    <!--在servlet标签配置servlet的类信息:告诉服务器有这个servlet-->
+    <servlet>
+        <!--配置servlet的名字:相当于给servlet类起别名    给程序员看的-->
+        <servlet-name>MyFirstServlet</servlet-name>
+        <!--配置servlet类的全名	给服务器看:服务器通过全类名找到MyFirstServlet-->
+        <servlet-class>com.servlet.MyFirstServlet</servlet-class>
+    </servlet>
+    <!--servlet映射信息,也这是servlet用来处理哪一个请求-->
+    <servlet-mapping>
+        <!--刚才配置的servlet的别名-->
+        <servlet-name>MyFirstServlet</servlet-name>
+
+        <!--告诉服务器处理这个servlet(MyFirstServlet用来处理哪个请求)   http://localhost:8080/javaweb/first-->
+        <!--表示就是访问当前项目下的/first-->
+        <url-pattern>/first</url-pattern>
+    </servlet-mapping>
+
+    <!--生命周期-->
+    <servlet>
+        <servlet-name>HelloServlet</servlet-name>
+        <servlet-class>com.servlet.HelloServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HelloServlet</servlet-name>
+        <!--
+          url:资源定位符
+                 静态资源,实际的文件 .html .css .png
+                 动态资源 请求动态资源是启动一段程序来处理
+      -->
+        <url-pattern>/hello</url-pattern>
+    </servlet-mapping>
+
+    <!--ServletConfig-->
+    <servlet>
+        <servlet-name>ConfigServlet</servlet-name>
+        <servlet-class>com.servlet.ConfigServlet</servlet-class>
+        <init-param>
+            <param-name>username</param-name>
+            <param-value>李四</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ConfigServlet</servlet-name>
+        <url-pattern>/config</url-pattern>
+    </servlet-mapping>
+
+    <!--ServletContext-->
+    <servlet>
+        <servlet-name>ContextServlet</servlet-name>
+        <servlet-class>com.servlet.ContextServlet</servlet-class>
+        <!--配置Servlet的初始化参数-->
+        <init-param>
+            <param-name>username</param-name>
+            <param-value>王五</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ContextServlet</servlet-name>
+        <url-pattern>/context</url-pattern>
+    </servlet-mapping>
+    <!--配置WEB项目的初始化参数-->
+    <context-param>
+        <param-name>user</param-name>
+        <param-value>张三</param-value>
+    </context-param>
+    
+    <!--HttpServletResponse-->
+    <servlet>
+        <servlet-name>MyHttpResponseServlet</servlet-name>
+        <servlet-class>com.servlet.MyHttpResponseServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MyHttpResponseServlet</servlet-name>
+        <url-pattern>/myhttp</url-pattern>
+    </servlet-mapping>
+
+    <!--HttpServletRequest-->
+    <servlet>
+        <servlet-name>MyHttpRequestServlet</servlet-name>
+        <servlet-class>com.servlet.MyHttpRequestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MyHttpRequestServlet</servlet-name>
+        <url-pattern>/myhttprequest</url-pattern>
+    </servlet-mapping>
+
+    <!--转发和重定向-->
+    <servlet>
+        <servlet-name>ForwardAndRedirectServlet</servlet-name>
+        <servlet-class>com.servlet.ForwardAndRedirectServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ForwardAndRedirectServlet</servlet-name>
+        <url-pattern>/far</url-pattern>
+    </servlet-mapping>
+    
+    <!--页面乱码问题-->
+    <servlet>
+        <servlet-name>EncodingServlet</servlet-name>
+        <servlet-class>com.servlet.EncodingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EncodingServlet</servlet-name>
+        <url-pattern>/encoding</url-pattern>
+    </servlet-mapping>
+    
+    <!--POST和GET乱码问题-->
+    <servlet>
+        <servlet-name>EncodingPostAndGetServlet</servlet-name>
+        <servlet-class>com.servlet.EncodingPostAndGetServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EncodingPostAndGetServlet</servlet-name>
+        <url-pattern>/encodingpostandget</url-pattern>
+    </servlet-mapping>
+    
+    <!--项目的路径问题-->
+    <servlet>
+        <servlet-name>PathServlet</servlet-name>
+        <servlet-class>com.servlet.PathServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PathServlet</servlet-name>
+        <url-pattern>/path</url-pattern>
+    </servlet-mapping>
 </web-app>

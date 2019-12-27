@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<customers>
+    <customer id="1">
+        <name>张三</name>
+        <age>11</age>
+    </customer>
+    <customer id="2">
+        <name>李四</name>
+        <age>12</age>
+    </customer>
+</customers>

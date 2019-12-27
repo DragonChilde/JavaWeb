@@ -10,10 +10,15 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.junit.Test;
+import org.omg.IOP.Encoding;
 
+import javax.crypto.Cipher;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -155,5 +160,37 @@ public class XmlTest {
             Element element1 = (Element) node1;
             System.out.println(element1.getText());
         }
+    }
+
+
+    @Test
+    public void test01() throws Exception
+    {
+        String id = "440103198611025710";
+        byte[] bytes = id.getBytes();
+
+
+     /* String base = "123456789";
+        byte[] baseBytes = base.getBytes();
+        String s = new String(Base64.getEncoder().encode(baseBytes));
+        System.out.println(s);
+*/
+         String encrypt = encryptByPublicKey(bytes);
+        System.out.println(encrypt);
+    }
+
+    public static String encryptByPublicKey(byte[] data) throws Exception {
+        KeyFactory kf = KeyFactory.getInstance("RSA");      //RSA初始化
+        byte[] b1 = Base64.getDecoder().decode("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxAAEYxRneuHNamaZhcEKzbYoHt5S/XVQ/GcvSWplJv+duUhKPqgGDZO1uyK/ozH5xCD7hwxy3RRCQfocjohw/jwEAl8pvDwlgvbeqpRwvKGkdZTEHqbJZ5k8ClzTOD0tbqzqCJ4kbkbkuZ2cihBgzMZToLuCwjI10sGwdpMYzvwIDAQAB");     //base64解密字符串
+
+
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(b1);       //用给定的编码密钥创建一个新的X509EncodedKeySpec。
+        Cipher c = Cipher.getInstance("RSA");                       //初始化RSA加密
+        c.init(Cipher.ENCRYPT_MODE, kf.generatePublic(spec));       //配置RSA模式
+        byte[] enc = c.doFinal(data);                               //加密
+        return new String(Base64.getEncoder().encode(enc));
+
+
+
     }
 }

@@ -16,8 +16,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Jsp File" />
+        <option value="HTML File" />
         <option value="Class" />
+        <option value="Jsp File" />
       </list>
     </option>
   </component>
@@ -45,14 +46,15 @@
   </component>
   <component name="ProjectId" id="1UsAJ8rT8uI2hf3A3gYg7GsoCsW" />
   <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.17701149" />
-    <property name="settings.editor.selected.configurable" value="reference.settings.project.maven.repository.indices" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.smartKeys" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -66,7 +68,36 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="JUnit.XmlTest.testXpath">
+  <component name="RunManager" selected="Tomcat Server.javaweb">
+    <configuration name="HttpTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.http.HttpTest" />
+      <module name="JavaWeb" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.http.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="XmlTest.test01" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="JavaWeb" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.xml.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.xml" />
+      <option name="MAIN_CLASS_NAME" value="com.xml.XmlTest" />
+      <option name="METHOD_NAME" value="test01" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="XmlTest.test1" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="JavaWeb" />
       <extension name="coverage">
@@ -78,22 +109,6 @@
       <option name="PACKAGE_NAME" value="com.xml" />
       <option name="MAIN_CLASS_NAME" value="com.xml.XmlTest" />
       <option name="METHOD_NAME" value="test1" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="XmlTest.test2" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="JavaWeb" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.xml.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="com.xml" />
-      <option name="MAIN_CLASS_NAME" value="com.xml.XmlTest" />
-      <option name="METHOD_NAME" value="test2" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -196,8 +211,7 @@
       </method>
     </configuration>
     <configuration name="javaweb" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 9" ALTERNATIVE_JRE_ENABLED="false">
-      <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
-      <option name="UPDATING_POLICY" value="restart-server" />
+      <option name="UPDATING_POLICY" value="redeploy-artifacts" />
       <deployment>
         <artifact name="javaweb">
           <settings>
@@ -269,18 +283,20 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.HttpTest" />
       <item itemvalue="JUnit.XmlTest.test1" />
-      <item itemvalue="Tomcat Server.javaweb" />
-      <item itemvalue="JUnit.XmlTest.test2" />
       <item itemvalue="JUnit.XmlTest.test3" />
       <item itemvalue="JUnit.XmlTest.testXpath" />
+      <item itemvalue="JUnit.XmlTest.test01" />
+      <item itemvalue="Tomcat Server.javaweb" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.XmlTest.test01" />
+        <item itemvalue="Application.HttpTest" />
         <item itemvalue="JUnit.XmlTest.testXpath" />
         <item itemvalue="JUnit.XmlTest.test1" />
         <item itemvalue="JUnit.XmlTest.test3" />
-        <item itemvalue="JUnit.XmlTest.test2" />
       </list>
     </recent_temporary>
   </component>
@@ -296,6 +312,9 @@
       <updated>1576134854440</updated>
       <workItem from="1576134857900" duration="5490000" />
       <workItem from="1576204785296" duration="10746000" />
+      <workItem from="1576463775748" duration="26686000" />
+      <workItem from="1576738653370" duration="7729000" />
+      <workItem from="1577081269169" duration="34567000" />
     </task>
     <servers />
   </component>
