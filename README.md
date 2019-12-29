@@ -1524,23 +1524,67 @@ page:	表示要包含的页面路径,不是把整个页面复制过来,再一行
 
 隐含对象:	在页面直接可以使用的对象
 
-五大常规对象
+**五大常规对象**
 
-- Throwable exception = null;	代表捕获异常对象
-- ServletConfig config = null;	代表servlet配置信息
+- **Throwable exception = null;	代表捕获异常对象**
+- **ServletConfig config = null;	代表servlet配置信息**
 	- servlet	-->	jsp页面对应的servlet
 	- config		-->	jsp页面对应的servlet的配置信息
 	- config.getServletName()
-- JspWriter out = null;		代表可以在页面输出数据的out对象
-- Object page = this;		代表当前jsp
-- HttpServletResponse response		代表当次响应的对象
+- **JspWriter out = null;		代表可以在页面输出数据的out对象**
+	- out.write();
+- **Object page = this;		代表当前jsp**
+- **HttpServletResponse response		代表当次响应的对象**
 
-四大域对象:域对象用来在其他资源共享数据
+**四大域对象:域对象用来在其他资源共享数据**
 
-- PageContext pageContext = null;		代表当前页面对象
-- HttpServletRequest request,		代表封装当次请求详细信息的对象
-- HttpSession session = null;		代表会话对象
-- ServletContext application = null;			代表整个web应用
+- **PageContext pageContext = null;		代表当前页面对象**
+- **HttpServletRequest request,		代表封装当次请求详细信息的对象**
+- **HttpSession session = null;		代表会话对象**
+- **ServletContext application = null;			代表整个web应用**
+
+### page对象 ###
+
+page对象表示当前一个JSP页面，可以理解为一个对象本身，即：把一个JSP当作一个对象来看待。page对象在开发中几乎不用，了解一下即可
+
+### out对象 ###
+
+- out对象用于向客户端发送文本数据。
+- out对象是通过调用pageContext对象的getOut方法返回的，其作用和用法与ServletResponse.getWriter方法返回的PrintWriter对象非常相似。
+- JSP页面中的out对象的类型为JspWriter，JspWriter相当于一种带缓存功能的PrintWriter，设置JSP页面的page指令的buffer属性可以调整它的缓存大小，甚至关闭它的缓存。
+- 只有向out对象中写入了内容，且满足如下任何一个条件时，out对象才去调用ServletResponse.getWriter方法，并通过该方法返回的PrintWriter对象将out对象的缓冲区中的内容真正写入到Servlet引擎提供的缓冲区中：
+
+	- 设置page指令的buffer属性关闭了out对象的缓存功能
+	- out对象的缓冲区已满
+	- 整个JSP页面结束
+
+
+out对象的工作原理图
+
+![](http://120.77.237.175:9080/photos/javaweb/08.png)
+
+	<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+	<html>
+	<head>
+	    <title>Title</title>
+	</head>
+	<body>
+	<%=config.getServletName()%>
+	<%
+	 out.write("你好");
+	 
+	%>
+	<%
+	response.getWriter().write("123456");
+	%>
+	</body>
+	</html>
+
+页面显示,**注意打印输出response.getWriter().write()是在out.write()前面的**
+
+![](http://120.77.237.175:9080/photos/javaweb/09.png)
+	
+
 
 
 https://www.cnblogs.com/xdp-gacl/p/3788369.html
