@@ -51,6 +51,7 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.17701149" />
@@ -314,7 +315,8 @@
       <workItem from="1576204785296" duration="10746000" />
       <workItem from="1576463775748" duration="26686000" />
       <workItem from="1576738653370" duration="7729000" />
-      <workItem from="1577081269169" duration="34567000" />
+      <workItem from="1577081269169" duration="34969000" />
+      <workItem from="1577670885957" duration="16625000" />
     </task>
     <servers />
   </component>

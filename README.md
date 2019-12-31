@@ -959,9 +959,9 @@ ServletContext代表Servlet上下文，也就是当前Web应用，一个Wed应�
 	</head>
 	<!--使用base标签 作用就是指定页面上所有的路径的基础路径.所有相对路径都是以我指定的基础路径开发,只有相对路径的写法,会按照base标签指定的基础路径来拼接新的路径.指定所有相对路径的起始路径.以后的相对路径参考的都是base标签指定的路径而不是当前资源-->
 	<base href="http://localhost:8080/javaweb/">
-	
-	<a href="index.jsp">首页</a>
-	</html>
+	<!--这里可以进行动态获取不用指定,利用下面request的作用域-->
+	<base href="<%=request.getScheme()%>://<%=request.getServerName()%>:<%=request.getServerPort()%><%=request.getContextPath()%>/">
+	<!--注意:链接最后还有有一个/不要漏了,不然会不起作用-->
 
 ## 类加载器加载资源 ##
 
@@ -1163,9 +1163,10 @@ ServletContext代表Servlet上下文，也就是当前Web应用，一个Wed应�
 		public abstract class HttpJspBase 
 		    extends HttpServlet 
 		    implements HttpJspPage 
-	
-	
-	​	    
+
+
+​	
+		    
 		{
 		    
 		    protected HttpJspBase() {
@@ -1317,7 +1318,7 @@ JSP脚本片断(scriptlet)用于在JSP页面中编写多行Java代码,脚本片�
 		System.out.println(a);
 		%>
 
-## JSP声明 ##
+## JSP声明(一般不采用) ##
 
 **JSP页面中编写的所有代码，默认会翻译到servlet的service方法中， 而JSP声明中的java代码被翻译到_jsp的service方法的外面**。语法：
 
@@ -1413,7 +1414,7 @@ page指令用于定义JSP页面的各种属性，无论page指令出现在JSP页
 	
 	<%--捕获异常信息,在页面进行打印输出--%>
 	<%= exception.getMessage()%>
-
+	
 	</body>
 	</html>
 
@@ -1430,7 +1431,7 @@ page指令用于定义JSP页面的各种属性，无论page指令出现在JSP页
 
 **include指令用于引入其它JSP页面，如果使用include指令引入了其它JSP页面，那么JSP引擎将把这两个JSP翻译成一个servlet。所以include指令引入通常也称之为静态引入。**
 
-语法：**<%@ include file="relativeURL"%>**，其中的file属性用于指定被引入文件的路径。路径以“/”开头，表示代表当前web应用。
+语法：**<%@ include file="relativeURL"%>**，其中的file属性用于指定被引入文件的路径。路径以“/”开头，表示代表当前web应用。**可以包含WEB-INF下的页面**
 
 **include指令细节注意问题**：
 
@@ -1492,7 +1493,11 @@ page:	表示要包含的页面路径,不是把整个页面复制过来,再一行
 
 <jsp:include>标签是动态引入， <jsp:include>标签涉及到的2个JSP页面会被翻译成2个servlet，这2个servlet的内容在执行时进行合并。
 
-而include指令是静态引入，涉及到的2个JSP页面会被翻译成一个servlet，其内容是在源文件级别进行并。
+**动态包含,要包含的文件是需要翻译和编译的,被包含的页面内容基本固定的情况下使用静态包含**
+
+而include指令是静态引入，涉及到的2个JSP页面会被翻译成一个servlet，其内容是在源文件级别进行合并。
+
+**静态包含,要包含的文件是不用翻译和编译,被包含的页面内容基本固定的情况下使用静态包含**
 
 ### jsp:forward标签 ###
 
@@ -1520,6 +1525,10 @@ page:	表示要包含的页面路径,不是把整个页面复制过来,再一行
 
 注意:在浏览器是看不到要转发的参数的,因为是在service()方法里内部进行参数转发到另外一个页面
 
+**注意,以下这个链接是一个无效连接,只是从浏览器访问是无法访问到的,因为JSP文件在编译时是在service()方法里直接打印成a标签出来,不是经由编译后使用java源码进行目录访问**
+	
+	<a href="WEB-INF/aaa.jsp"></a>
+
 ## JSP九大隐含对象 ##
 
 隐含对象:	在页面直接可以使用的对象
@@ -1530,18 +1539,47 @@ page:	表示要包含的页面路径,不是把整个页面复制过来,再一行
 - **ServletConfig config = null;	代表servlet配置信息**
 	- servlet	-->	jsp页面对应的servlet
 	- config		-->	jsp页面对应的servlet的配置信息
-	- config.getServletName()
+	- config.getServletName()--->JSP
 - **JspWriter out = null;		代表可以在页面输出数据的out对象**
 	- out.write();
-- **Object page = this;		代表当前jsp**
+- **Object page = this;		代表当前jsp,根本没用**
 - **HttpServletResponse response		代表当次响应的对象**
 
 **四大域对象:域对象用来在其他资源共享数据**
 
 - **PageContext pageContext = null;		代表当前页面对象**
+	- 获取其它隐含对象 pageContext.getXX();
+	- 作为域对象共享数据.只能在当前页面共享数据,离开页面就无法共享
+		- String key ,Objec value
+		- 通过调用域对象.setAttribute(key,value),给相应的域中设置内容
+		- 域对象.getAttrubute(key),获取域中的内容
+		- 域对象.removeAttribute(key),移除域中的内容
 - **HttpServletRequest request,		代表封装当次请求详细信息的对象**
+	
+	- 在同一个请求对象中共享数据,只要是同一次请求,就可以共享数据
+		- http://localhost:8080/javaweb/
+		- request.getScheme()	获取连接前缀,如http,https
+		- request.getServerName()	获取主域名,如localhost 
+		- request.getServerPort()	获取端口号,如8080
+		- request.getContextPath()	获取项目路径,如/javaweb
+
 - **HttpSession session = null;		代表会话对象**
+	
+	- 同一次会话共享数据 浏览器找开-开始会话		浏览器关闭-结束会话
 - **ServletContext application = null;			代表整个web应用**
+	
+	-  application代表当前web应用.只要在同一个web应用中都可以共享数据.web应用只要不卸载都可以访问
+
+**各作用域范围**
+
+	| 域对象      | 作用范围    | 起如时间    | 结束时间    |
+	| ----------- | ----------- | ----------- | ----------- |
+	| pageContext | 当前JSP页面 | 页面加载    | 离开页面    |
+	| request     | 同一个请求  | 收到请求    | 响应        |
+	| session     | 同一个会话  | 开始会话    | 结束会话    |
+	| application | 当前web应用 | web应用加载 | web应用卸载 |
+
+
 
 ### page对象 ###
 
@@ -1585,6 +1623,182 @@ out对象的工作原理图
 ![](http://120.77.237.175:9080/photos/javaweb/09.png)
 	
 
+### pageContext对象 ###
+
+pageContext对象是JSP技术中最重要的一个对象，它代表JSP页面的运行环境，这个对象不仅封装了对其它8大隐式对象的引用，它自身还是一个域对象(容器)，可以用来保存数据。并且，这个对象还封装了web开发中经常涉及到的一些常用操作，例如引入和跳转其它资源、检索其它域对象中的属性等。
+
+#### 通过pageContext获得其他对象 ####
+
+- getException方法返回exception隐式对象
+- getPage方法返回page隐式对象
+- getRequest方法返回request隐式对象
+- getResponse方法返回response隐式对象
+- getServletConfig方法返回config隐式对象
+- getServletContext方法返回application隐式对象
+- getSession方法返回session隐式对象
+- getOut方法返回out隐式对象
+
+#### 测试各作用域范围 ####
+
+	<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+	<html>
+	<head>
+	    <title>Scope</title>
+	</head>
+	<body>
+	<%
+	pageContext.setAttribute("pageName","page");
+	request.setAttribute("requestName","request");
+	session.setAttribute("sessionName","session");
+	application.setAttribute("applicationName","application");
+	%>
+	
+	pageContest name is <%= pageContext.getAttribute("pageName")%><br>
+	request name is <%= request.getAttribute("requestName")%><br>
+	session name is <%= session.getAttribute("sessionName")%><br>
+	application name is <%= application.getAttribute("applicationName")%><br>
+	</body>
+	</html>
+
+打开scope.jsp当前页面都可以成功显示的,但如果使用a标准跳转链接后到scope2.jsp
+
+	pageContest name is null
+	request name is null
+	session name is session
+	application name is application
+
+pageContest只能作用在当前页面,request只能作用在同一个请求,所以如果要想获取request的请求值,使用转发才可以<jsp:forward page="scope2.jsp"></jsp:forward>
+
+	pageContest name is null
+	request name is request
+	session name is session
+	application name is application
+
+当关闭浏览器时session的值会消失,当web应用关闭时,application值才会消失
+
+# EL表达式 #
+
+## EL表达式简介 ##
+
+EL 全名为Expression Language。简化开发,EL主要作用：
+
+1. 获取数据
+
+	EL表达式主要用于替换JSP页面中的脚本表达式，以从各种类型的web域 中检索java对象、获取数据。(某个web域 中的对象，访问javabean的属性、访问list集合、访问map集合、访问数组)
+
+2. 执行运算
+
+	利用EL表达式可以在JSP页面中执行一些基本的关系运算、逻辑运算和算术运算，以在JSP页面中完成一些简单的逻辑运算。${user==null}
+
+3. 获取web开发常用对象
+
+	EL 表达式定义了一些隐式对象，利用这些隐式对象，web开发人员可以很轻松获得对web常用对象的引用，从而获得这些对象中的数据。
+
+4. 调用Java方法
+
+	EL表达式允许用户开发自定义EL函数，以在JSP页面中通过EL表达式调用Java类的方法。
+
+## 获取数据 ##
+
+使用EL表达式获取数据语法：**${标识符}**
+
+EL表达式语句在执行时，会调用pageContext.findAttribute方法，用标识符为关键字，分别从page、request、session、application四个域中查找相应的对象，找到则返回相应对象，找不到则返回”” （注意，不是null，而是空字符串）。
+
+EL表达式可以很轻松获取JavaBean的属性，或获取数组、Collection、Map类型集合的数据
+
+**EL表达式如果获取域中的属性,直接写属性名,会从四个域从小到大找.找到级停止,EL表达式可以连点操作**
+
+EL	11个隐含对象(pageContext,pageScope,reuqestScope,sessionScope,applicationScope,param,paramValues,header,headerValues,cookie,initParam)
+
+- 四个域对象.是从这四个域对象中取值
+- pageContext域中的数据pageScope(封装了pageContext域中所有的共享数据(setAttr,getAttr),是一个Map)
+- request域中的数据requestScope(封装了request域中所有的共享数据(setAttr,getAttr),是一个Map)
+- session域中的数据sessionScope(封装了session域中所有的共享数据(setAttr,getAttr),是一个Map)
+- application域中的数据applicationScope(封装了application域中所有的共享数据(setAttr,getAttr),是一个Map)
 
 
-https://www.cnblogs.com/xdp-gacl/p/3788369.html
+
+		<%pageContext.setAttribute("page","page1");%>
+		<%request.setAttribute("request","request2");%>
+		<%session.setAttribute("session","session3");%>
+		<%application.setAttribute("application","application4");%>
+		
+		el表达式获取属性值<br>
+		page:${page}<br>				//page:page1
+		request:${request}<br>			//request:request2
+		session:${session}<br>			//session:session3
+		application:${application}<br>	//application:application4
+
+		<%
+	    Customer customer = new Customer();
+	    customer.setName("张三");
+		%>
+		<%pageContext.setAttribute("cus",customer);%>
+		<%request.setAttribute("cus","request2");%>
+		<%session.setAttribute("cus","session3");%>
+		<%application.setAttribute("cus","application4");%>
+		
+		el表达式获取属性值<br>
+		//根据属性名从小到大找
+		page:${cus}<br>		//page:Customer{id=null, name='张三', age=null}
+		request:${cus}<br>	//request:Customer{id=null, name='张三', age=null}
+		session:${sessionScope.cus}<br>		//session:session3
+		application:${applicationScope.cus}<br>		//application:application4
+
+		page:${pageScope.cus.name}<br>		//page:张三
+		request:${requestScope.cus}<br>		//request:request2
+		session:${sessionScope.cus}<br>		//session:session3
+		application:${applicationScope.cus}<br>		//application:application4
+
+		<!--注意:EL表达式只可以取到11个隐藏域的属性,自定义的是无法取出的->
+		<%
+		String str = "你好";
+		%>
+
+		jspl:<%=str%>		//	你好
+		el:${str}			//什么都没有
+
+- 如何获取带有特殊命名的属性(因为会产生歧义)使用['属性名']	获取Map中的数据可以使用.也可以使用[Key]
+
+		<%
+	    Customer customer = new Customer();
+	    customer.setName("张三");
+		%>
+		<%pageContext.setAttribute("cus-s",customer);%>
+		el表达式获取属性值<br>
+		pageContext: ${pageScope['cus-s']}<br>		//pageContext: Customer{id=null, name='张三', age=null}
+		pageContext: ${pageScope['cus-s'].name}<br>		//pageContext: 张三
+		pageContext: ${pageScope['cus-s']['name']}<br>	//pageContext: 张三
+
+- el取出域中属性获取map的key值,如果没有,"",如果有显示相应的值
+
+		<%
+		pageContext.setAttribute("page","page1");
+		%>
+		
+		jstl:<%=pageContext.getAttribute("page1")%><br>		//jstl:null
+		el:${page1}		//el:
+
+- 一个非map对象 pageContext就代表的是jsp隐含对象中的pageContext,取出其它隐含元素
+
+		<%--el中的其它对象 pageContext可以出jsp页面其它的隐含对象,然后可以取出所有隐含对象中的属性了--%>
+		jstl:<%=pageContext.getRequest().getScheme()%>
+		el:${pageContext.request.scheme}
+
+- HTTP相关
+
+		param (封装了所有的请求参数的key-value)对应一个请求参数 request.getParam("username) <br>
+		paramValues 对应一组请求参数<br>
+		header 请求头 request.getHeader("User-Agent")<br>
+		headerValues 请求头返回字符数组<br>
+		cookie 获取某个cookie对象 取出cookie的值<br>
+		
+		请求参数:${param.username}<br>			//请求参数:张三
+		请求头:${header['User-Agent']}<br>		//请求头:Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36
+		cookie:${cookie.JSESSIONID.name} || ${cookie.JSESSIONID.value}		//cookie:JSESSIONID || 0629FD8FD175F36D0E4B4C345EB7F8A7
+
+		<%--initParam 获取web.xml的初始化参数--%>
+		<%--注意取的不是Servlet的初始他参数,因为JSP页面都是继承Tomcat下的org.apache.jasper.servlet.JspServlet,命名为JSP--%>
+		web.xml初始化参数:${initParam.user}<br>		//张三
+
+## EL表达式 ##

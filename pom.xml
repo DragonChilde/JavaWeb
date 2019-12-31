@@ -53,6 +53,19 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--beanutils包,可以使用beanutils把对应的类的属性进行赋值-->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+        <!--commons-logging -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+
 
     </dependencies>
 

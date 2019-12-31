@@ -12,6 +12,14 @@
 </head>
 <body>
 <%=config.getServletName()%>
-<%=%>
+<%=request.getScheme()%>
+<%=request.getServerName()%>
+<%=request.getServerPort()%>
+<%=request.getContextPath()%>
+
+<base href="<%=request.getScheme()%>://<%=request.getServerName()%>:<%=request.getServerPort()%><%=request.getContextPath()%>/">
+
+
+<a href="index.jsp">index.jsp</a>
 </body>
 </html>
