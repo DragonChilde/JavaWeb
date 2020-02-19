@@ -1,4 +1,4 @@
-<a href="http://120.77.237.175:9080/photos/javaweb/">JavaWeb</a>
+ <a href="http://120.77.237.175:9080/photos/javaweb/">JavaWeb</a>
 
 # XML #
 
@@ -1700,7 +1700,12 @@ EL 全名为Expression Language。简化开发,EL主要作用：
 
 ## 获取数据 ##
 
-使用EL表达式获取数据语法：**${标识符}**
+使用EL表达式获取数据语法：
+
+- **${标识符}**
+- **${对象.属性名}**
+- **${map.key}**
+- **${map['key']}**
 
 EL表达式语句在执行时，会调用pageContext.findAttribute方法，用标识符为关键字，分别从page、request、session、application四个域中查找相应的对象，找到则返回相应对象，找不到则返回”” （注意，不是null，而是空字符串）。
 
@@ -1711,10 +1716,10 @@ EL表达式可以很轻松获取JavaBean的属性，或获取数组、Collection
 EL	11个隐含对象(pageContext,pageScope,reuqestScope,sessionScope,applicationScope,param,paramValues,header,headerValues,cookie,initParam)
 
 - 四个域对象.是从这四个域对象中取值
-- pageContext域中的数据pageScope(封装了pageContext域中所有的共享数据(setAttr,getAttr),是一个Map)
-- request域中的数据requestScope(封装了request域中所有的共享数据(setAttr,getAttr),是一个Map)
-- session域中的数据sessionScope(封装了session域中所有的共享数据(setAttr,getAttr),是一个Map)
-- application域中的数据applicationScope(封装了application域中所有的共享数据(setAttr,getAttr),是一个Map)
+- pageContext域中的数据**pageScope**(封装了pageContext域中所有的共享数据(setAttr,getAttr),是一个Map)
+- request域中的数据**requestScope**(封装了request域中所有的共享数据(setAttr,getAttr),是一个Map)
+- session域中的数据**sessionScope**(封装了session域中所有的共享数据(setAttr,getAttr),是一个Map)
+- application域中的数据**applicationScope**(封装了application域中所有的共享数据(setAttr,getAttr),是一个Map)
 
 
 
@@ -1796,6 +1801,8 @@ EL	11个隐含对象(pageContext,pageScope,reuqestScope,sessionScope,application
 		请求参数:${param.username}<br>			//请求参数:张三
 		请求头:${header['User-Agent']}<br>		//请求头:Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36
 		cookie:${cookie.JSESSIONID.name} || ${cookie.JSESSIONID.value}		//cookie:JSESSIONID || 0629FD8FD175F36D0E4B4C345EB7F8A7
+
+- WEB配置相关
 
 		<%--initParam 获取web.xml的初始化参数--%>
 		<%--注意取的不是Servlet的初始他参数,因为JSP页面都是继承Tomcat下的org.apache.jasper.servlet.JspServlet,命名为JSP--%>
@@ -1891,3 +1898,447 @@ EL	11个隐含对象(pageContext,pageScope,reuqestScope,sessionScope,application
 	pageContext.setAttribute("ctx",request);
 	%>
 	<base href="${ctx.scheme}//:${ctx.serverName}:${ctx.serverPort}${ctx.contextPath}">
+
+
+# JSTL #
+
+## JSTL简介 ##
+
+JSP的标准标签库(里面有很多的标签可以使用),极大的简化开发
+
+## 使用 ##
+
+### 导包 ###
+
+  	<!--JSTL 标签-->
+    <dependency>
+        <groupId>org.apache.taglibs</groupId>
+        <artifactId>taglibs-standard-impl</artifactId>
+        <version>1.2.5</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.taglibs</groupId>
+        <artifactId>taglibs-standard-spec</artifactId>
+        <version>1.2.5</version>
+    </dependency>
+
+### 在页面导入标签库 ###
+
+	page include taglib(导入标签库的指令)
+
+#### 核心标签库 c标签库 ####
+
+	<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+	用来导入标签库	prefix定义标签的前缀<jsp:forword> uri:标签库的唯一识别符
+	
+#### 使用核心标签库 ####
+
+##### out用于计算一个表达式并将结果输出到当前页面 #####
+
+	value:代表要输出的内容 可以是el表达式
+	default:表示默认值(当值为null时,才会输出默认值)
+	escapeXml:表示是否转义特殊字符,默认转义
+
+	<%
+	    pageContext.setAttribute("msg","你好");
+	%>
+	<c:out value="${msg}" default="hello" escapeXml="true"></c:out>		//你好
+
+	<%
+	    pageContext.setAttribute("msg",null);
+	%>
+	<c:out value="${msg}" default="hello" escapeXml="true"></c:out>		//hello
+
+	<%
+	    pageContext.setAttribute("msg","<h1>你好</h1>");
+	%>
+	<c:out value="${msg}" default="hello" escapeXml="false"></c:out>	//你好(大写)
+##### set用于添加或修改域中的属性 #####
+
+	<c:set var="" property="" scope="" target="" value=""></c:set>
+
+1. 给域中设置一个属性
+
+		var:表示要设置的属性的key
+		value:表示要设置的属性的value
+		scope:表示要设置在哪个域中 pageScope
+				scope="page"
+				scope="request"
+				scope="session"
+				scope="application"
+	
+		<c:set var="tip" scope="request" value="我是提示信息"></c:set>
+		${requestScope.tip}			//我是提示信息
+
+2. 修改对象的某个属性值
+
+		<c:set property="name" target="${user}" value="李四"></c:set>
+		property:代表要修改的属性名
+		value:修改后的值
+		target:代表修改哪个对象
+	
+		<%
+		    Student student = new Student("张三",16);
+		    pageContext.setAttribute("student",student);
+		%>
+		<c:set property="username" value="李四" target="${student}"></c:set>
+		<%=student.getUsername()%>		//李四
+
+##### remove用来移除域中的属性 #####
+
+	<c:remove var="" scope="" />
+	var:要移除的属性key
+	scope:要移除哪个域中的属性,如果不指定移除哪个域中的属性,那么就全部移除
+
+	<%
+    pageContext.setAttribute("student",student);
+    request.setAttribute("student",student);
+    session.setAttribute("student",student);
+    application.setAttribute("student",student);
+	%>
+	<c:remove var="student"/>
+	page:${pageScope.student.username}<br/>		//空值
+	request:${requestScope.student.username}<br/>	//空值
+	session:${sessionScope.student.username}<br/>	//空值
+	application:${applicationScope.student.username}<br/>	//空值
+
+	<c:remove var="student" scope="page"/>
+	page:${pageScope.student.username}<br/>		//空值
+	request:${requestScope.student.username}<br/>	//李四
+	session:${sessionScope.student.username}<br/>	//李四
+	application:${applicationScope.student.username}<br/>	//李四
+
+##### if用于实现if语句的判断功能 #####
+	
+	test:就是判断条件 如果是true执行标签体里面的内容,否则不执行
+	scope:指定作用域,就是将判断结果保存在指定的域中,方便以后使用
+	var:指定key
+
+	<%--判断为真,页面直接进入--%>
+	<c:if test="${10>1}" scope="page" var="flag">
+	    这是在if的作用域里
+	</c:if>
+	${flag}
+	<%--if判断没有else语句只能再写多个if判断--%>
+	<c:if test="${10<1}" scope="page" var="flag2">
+	    .....
+	</c:if>
+
+	<!--if标签还可以相互嵌套-->
+	<c:if test="${1>0}">
+	    这里是判断1>0
+	    <c:if test="${2>1}">
+	        这里是判断2>1
+	    </c:if>
+	</c:if>
+
+##### choose,when,othersise这是一套组合  #####
+	
+	<%--当所有when的条件都不满足时,才会进入otherwise--%>
+	<%--当agen=16时,页面输出你正在读高中-->
+	<c:choose>
+	    <c:when test="${student.age > 19}">
+	        你已是成年人
+	    </c:when>
+	    <c:when test="${student.age <=18 && student.age >=16}">
+	        你正在读高中
+	    </c:when>
+	    <c:when test="${student.age <=15 && student.age >=13}">
+	        你正在读初中
+	    </c:when>
+	    <c:otherwise>
+	        你还是个小BB
+	    </c:otherwise>
+	</c:choose>
+
+
+##### forEache用来做循环遍历 #####
+
+	var:指定遍历的当前条目的变量名 
+	begin:指定遍历的开始位置
+	end:指定遍历的结束位置
+	items:要遍历的东西	list	array...
+	step:步长,一次跳过多少
+	varStatus:遍历状态,里面封装了当前遍历的所有状态信息
+		varStatus="status"
+		status.begin:开始的索引
+		status.end:结束的索引
+		status.step:遍历的步长
+		status.count:当前遍历的个数
+		status.index:当前遍历到的索引
+		status.last:是否最后一个
+
+	<!--遍历1-10的数字-->
+	<c:forEach var="num" begin="1" end="10" step="1">
+	    ${num}
+	</c:forEach>
+
+	<!--遍历list集合-->
+	<%
+	    ArrayList<Student> list = new ArrayList<>();
+	    list.add(new Student("张三",12));
+	    list.add(new Student("李四",13));
+	    list.add(new Student("王五",14));
+	    list.add(new Student("陈二",15));
+	%>
+	<hr>
+	<c:forEach items="<%=list%>" var="student">
+	    ${student.username}----${student.age}<br/>
+	</c:forEach>
+		
+	<!--遍历list集合(也可以通过作用域进行遍历)-->
+	<%
+	    ArrayList<Student> list = new ArrayList<>();
+	    list.add(new Student("张三",12));
+	    list.add(new Student("李四",13));
+	    list.add(new Student("王五",14));
+	    list.add(new Student("陈二",15));
+	
+	    request.setAttribute("list",list);
+	%>
+	<hr>
+	<c:forEach items="${requestScope.list}" var="student">
+	    ${student.username}----${student.age}<br/>
+	</c:forEach>
+
+
+	<c:forEach items="${requestScope.list}" var="student" varStatus="status">
+	    ${student.username}----${student.age}----${status}<br/>
+	</c:forEach>
+
+	
+	<%--
+	    张三----12----javax.servlet.jsp.jstl.core.LoopTagSupport$1Status@50a4d770
+	    李四----13----javax.servlet.jsp.jstl.core.LoopTagSupport$1Status@50a4d770
+	    王五----14----javax.servlet.jsp.jstl.core.LoopTagSupport$1Status@50a4d770
+	    陈二----15----javax.servlet.jsp.jstl.core.LoopTagSupport$1Status@50a4d770
+	--%>
+	<!--当调用staus时,打印出类信息,类如图下-->
+![](http://120.77.237.175:9080/photos/javaweb/12.png)
+
+	<c:forEach begin="0" end="5" step="2" items="${requestScope.list}" var="student" varStatus="status">
+	    ${student.username}----${student.age}----${status.begin}----${status.end}----${status.step}----${status.count}----${status.index}<br/>
+	</c:forEach>
+
+	<!--可以看出赋值的status可以输出当前遍历的状态信息--->
+	<!--
+		name----age----begin----end---step----count----index
+		张三----12----0----5----2----1----0
+		王五----14----0----5----2----2----2
+	-->
+
+##### url使用可选的参数来创造一个URL #####
+
+	value="index.jsp"指定要改装的路径
+	把改装后的返回值放到request域中uri属性中,方便后面获取
+
+	<c:url value="/index.jsp" var="uri" scope="request"></c:url>
+	${uri}				<!--/javaweb/index.jsp-->
+	<!--可以直接获取到目录路径,简化页面链接-->
+
+##### redirect重定向至一个新的URL #####
+
+	<c:redirect url="/index.jsp"></c:redirect>	<!--直接重定向到项目首页-->
+
+	<!--可以结合错误信息重定向到错误页面-->
+	<c:if test="${msg}" scope="request">
+	    <c:redirect url="/error.jsp"></c:redirect>
+	</c:if>
+
+#### JSTL函数库 ####
+
+	<%
+	    request.setAttribute("msg","HelloWorld");
+	%>
+	判断前面的字符串是否包含后面的(区分大小写):${fn:contains(msg,'hello')}<br>  <%--false--%>
+	判断前面的字符串是否包含后面的(不区分大小写):${fn:containsIgnoreCase(msg,'HELLO')}<br>  <%--false--%>
+	判断字符串是否以某个字符串开始:${fn:startsWith(msg,'Hello')}<br>   <%--true--%>
+	判断字符串是否以某个字符串结束:${fn:endsWith(msg,"world" )}<br>    <%--false--%>
+	判断某个字符串的起始位置:${fn:indexOf(msg,"o" )}<br>    <%--4--%>
+	字符串替换:${fn:replace(msg, "Hello", "Hi")}<br>     <%--HiWorld--%>
+	截取字符串(不包含后面的索引):${fn:substring(msg, 0, 5)}<br>    <%--Hello--%>
+
+#### 自定义标签(了解) ####
+
+1. 编写标签库的描述文件.描述标签的详细信息,库描述文件放在WEB-INF下,**mytag.tld**
+
+		<?xml version="1.0" encoding="UTF-8"?>
+	
+		<taglib xmlns="http://java.sun.com/xml/ns/javaee"
+		        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+		        version="2.1">
+		
+		    <!--标签库的版本-->
+		    <tlib-version>1.0</tlib-version>
+		    <!--指定下面所有当前标签库标签的前缀-->
+		    <short-name>mytag</short-name>
+		    <!--标签库的唯一村识,域名/mytag-->
+		    <uri>/mytag</uri>
+		
+		    <!--定义一个可以使用的标签-->
+		    <tag>
+		        <!--定义标签名-->
+		        <name>hello</name>
+		        <!--定义标签的实现类,必须写全类名-->
+		        <tag-class>com.jstl.tag.MyTagFunction</tag-class>
+		        <!--
+		            empty:是一个空标签,就是没有标签体,代表当前是一个自结束标签
+		            scriptless:不可以传jsp表达式,el及其它正常
+		            JSP:scriptless可以传Jsp也可以,还可以传入jsp表达式
+		            tagdependent:传入是什么就是什么
+		        -->
+		        <body-content>empty</body-content>
+		        <!--使用attrubute属性-->
+		        <attribute>
+		            <!--name指定属性名-->
+		            <name>msg</name>
+		            <!--这个属性是必须-->
+		            <required>true</required>
+		            <!--runtime expression value(传入el表达式是否解析)-->
+		            <rtexprvalue>true</rtexprvalue>
+		        </attribute>
+		    </tag>
+		
+		</taglib>
+
+2. 标签的实现类实现SimpleTag接口类
+
+		public class MyTagFunction implements SimpleTag {
+		
+		    private String msg;
+		    private PageContext pc;
+		
+		    public String getMsg() {
+		        return msg;
+		    }
+		
+		    public void setMsg(String msg) {
+		        this.msg = msg;
+		        System.out.println("接收到的属性:"+msg);
+		    }
+		
+		    /*执行标签*/
+		    @Override
+		    public void doTag() throws JspException, IOException {
+		        System.out.println("doTag");
+		        pc.getOut().write("<h1>"+this.msg+"</h1>");
+		    }
+		
+		    /*设置父标签 服务器自动传进来*/
+		    @Override
+		    public void setParent(JspTag jspTag) {
+		
+		    }
+		
+		    /*获取父标签(只特指自定义标签)*/
+		    @Override
+		    public JspTag getParent() {
+		        System.out.println("getParent");
+		        return null;
+		    }
+		
+		    /*设置jspContext == pageContext 服务器自动传入*/
+		    @Override
+		    public void setJspContext(JspContext jspContext) {
+		        System.out.println("setJspContext");
+		        System.out.println(jspContext); /*org.apache.jasper.runtime.PageContextImpl*/
+		        this.pc = (PageContext) jspContext;
+		    }
+		
+		    /*设置标签体 服务器自动传入*/
+		    @Override
+		    public void setJspBody(JspFragment jspFragment) {
+		        System.out.println("setJspBody");
+		    }
+		}
+
+3. 在页面引入
+
+	<%@ taglib prefix="mytag" uri="/mytag" %>
+
+4. 使用自定义标签
+
+	<mytag:hello msg="hello"/>		//在页面显示hello
+
+
+# Cookie #
+
+## 创建Cookie ##
+
+	public class CookieServlet extends HttpServlet {
+	    @Override
+	    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	        this.doPost(req, resp);
+	    }
+	
+	    @Override
+	    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	       if(req.getParameter("method").equals("add"))
+	       {
+	           Cookie cookie = new Cookie("username","张三");
+	            resp.addCookie(cookie);
+	            resp.getWriter().write("add cookie success!");
+	       }
+	    }
+	}
+
+- **注意:创建Cookie必须response返回给浏览器**
+- **默认关闭浏览器会销毁Cookie**
+
+## 获取Cookie ##
+
+	Cookie[] cookies = req.getCookies();
+    for(Cookie cookie:cookies)
+    {
+        System.out.println(cookie.getName()+"------"+cookie.getValue());
+    }
+	
+	//username------张三
+
+## 删除Cookie ##
+
+1. 默认Cookie是在会话期间有效(浏览器一直不关)
+2. Cookie可以修改默认的存活时间
+
+		//负数 不保存Cookie,即使发给浏览器也不会保存
+		//正数 Cookie的最大存在时间 单位:秒
+		//0 表示删除Cookie
+		cookie.setMaxAge(0);
+		//浏览器信息Set-Cookie: username=张三; Max-Age=0; Expires=Thu, 01-Jan-1970 00:00:10 GMT
+
+## 持久化Cookie ##
+
+	//表示一小时后Cookie才会被删除(浏览器会删除)
+	cookie.setMaxAge(60*60);
+
+## 设置Cookiek路径 ##
+
+告诉浏览器访问哪些资源会携带这个Cookie.默认:访问当前项目下的任何东西都会携带Cookie
+
+ 	Cookie cookie = new Cookie("msg","你好");
+    cookie.setPath("/hello");		//设置Cookie的保存路径(浏览器只有访问到该目录下才可访问到该Cookie)
+    resp.addCookie(cookie);
+    System.out.println("cookie path set success!");
+
+![](http://120.77.237.175:9080/photos/javaweb/13.png)
+
+## 修改Cookie ##
+
+浏览器如何识别是否同一Cookie?		根据Cookie的name,修改Cookie的同名key,就可修改其值
+
+  	Cookie[] cookies = req.getCookies();
+    for (Cookie cookie:cookies)
+    {
+        if (cookie.getName().equals("username"))
+        {
+            cookie.setValue("李四");
+            resp.addCookie(cookie);
+        }
+    }
+
+或
+
+	Cookie cookie = new Cookie("username", "李四");
+    resp.addCookie(cookie);

@@ -129,4 +129,15 @@
         <servlet-name>PathServlet</servlet-name>
         <url-pattern>/path</url-pattern>
     </servlet-mapping>
+    
+    
+    <!--Cookie-->
+    <servlet>
+        <servlet-name>CookieServlet</servlet-name>
+        <servlet-class>com.servlet.CookieServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CookieServlet</servlet-name>
+        <url-pattern>/cookie</url-pattern>
+    </servlet-mapping>
 </web-app>

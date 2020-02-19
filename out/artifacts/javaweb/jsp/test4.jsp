@@ -12,14 +12,12 @@
 </head>
 <body>
 <%=config.getServletName()%>
-<%=request.getScheme()%>
-<%=request.getServerName()%>
-<%=request.getServerPort()%>
-<%=request.getContextPath()%>
+<%
+ out.write("你好");
 
-<base href="<%=request.getScheme()%>://<%=request.getServerName()%>:<%=request.getServerPort()%><%=request.getContextPath()%>/">
-
-
-<a href="index.jsp">index.jsp</a>
+%>
+<%
+response.getWriter().write("123456");
+%>
 </body>
 </html>
