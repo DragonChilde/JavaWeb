@@ -2342,3 +2342,83 @@ JSP的标准标签库(里面有很多的标签可以使用),极大的简化开�
 
 	Cookie cookie = new Cookie("username", "李四");
     resp.addCookie(cookie);
+
+
+# Session #
+
+![](http://120.77.237.175:9080/photos/javaweb/14.png)
+
+## 获取Session对象 ##
+	public class SessionServlet extends HttpServlet {
+	    @Override
+	    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	        this.doPost(req,resp);
+	    }
+	
+	    @Override
+	    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	        String method = req.getParameter("method");
+	        /*获取Session*/
+	        HttpSession session = req.getSession();
+	        if (method.equals("add"))
+	        {
+	            //判断Session是否新创建,
+	            boolean aNew = session.isNew();
+	            resp.getWriter().print("session is new :"+aNew);
+	        }
+	    }
+	
+	}
+
+## 给Session保存内容 ##
+
+	HttpSession session = req.getSession();
+ 	String id = session.getId();
+    session.setAttribute("sessionid",id);
+    resp.getWriter().print("sessionid is "+id);
+
+## 获取Seesion中内容 ##
+
+	HttpSession session = req.getSession();
+	String sessionid = (String) session.getAttribute("sessionid");
+    resp.getWriter().print("sessionid get "+sessionid);
+	
+![](http://120.77.237.175:9080/photos/javaweb/15.jpg)
+
+## 获取Session有效时间 ##
+
+ 	//获取session的最大存话时间 以秒为单位
+    //session默认是30分钟,为什么新会话开启会返回新session
+    //因为获取session根据cookie带来的jsessionid来获取.cookie默认关闭浏览器就没了
+    //再来获取session,返回新的session,旧的session还在.只是找不到而已
+    int maxInactiveInterval = session.getMaxInactiveInterval();
+    resp.getWriter().print("max time is "+maxInactiveInterval);		//1800
+
+可以通过在web.xmlw修改其默认值
+
+    <session-config>
+        <session-timeout>1</session-timeout>		//60秒过期
+    </session-config>
+
+
+## 修改Session有效时间 ##
+
+	 /*1传入负数:代表永不过期*/
+    /*2传入正数:代表多少秒后过期,距离最后一次使用session时间*/
+	HttpSession session = req.getSession();
+    session.setMaxInactiveInterval(3);		//3秒后过期
+    resp.getWriter().print("set session time success!");
+
+创建新的Session,再修改有效时间,重新再创建Session返回false
+
+## 强制Session失效 ##
+
+	HttpSession session = req.getSession();
+	session.invalidate();
+    resp.getWriter().print("session is invalid");
+
+## 生命周期 ##
+
+- 创建:第一次用session会创建一个新的session
+- 销毁:
+	1. 默认30分钟后session销毁

@@ -140,4 +140,18 @@
         <servlet-name>CookieServlet</servlet-name>
         <url-pattern>/cookie</url-pattern>
     </servlet-mapping>
+    
+    <!--Sesseion-->
+    <servlet>
+        <servlet-name>SessionServlet</servlet-name>
+        <servlet-class>com.servlet.SessionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SessionServlet</servlet-name>
+        <url-pattern>/session</url-pattern>
+    </servlet-mapping>
+
+    <!--<session-config>
+        <session-timeout>1</session-timeout>
+    </session-config>-->
 </web-app>
