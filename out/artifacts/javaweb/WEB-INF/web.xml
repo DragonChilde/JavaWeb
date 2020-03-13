@@ -69,7 +69,11 @@
         <param-name>user</param-name>
         <param-value>张三</param-value>
     </context-param>
-    
+    <context-param>
+        <param-name>javax.faces.CONFIG_FILES</param-name>
+        <param-value>/META-INF/context.xml,/context.xml</param-value>
+    </context-param>
+
     <!--HttpServletResponse-->
     <servlet>
         <servlet-name>MyHttpResponseServlet</servlet-name>
@@ -154,4 +158,136 @@
     <!--<session-config>
         <session-timeout>1</session-timeout>
     </session-config>-->
+    
+    <servlet>
+        <servlet-name>Kaptcha</servlet-name>
+        <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+        <!--初始化验证码参数-->
+        <!--配置验证图片宽度-->
+        <init-param>
+            <param-name>kaptcha.image.width</param-name>
+            <param-value>200</param-value>
+        </init-param>
+        <!--配置验证图片高-->
+        <init-param>
+            <param-name>kaptcha.image.height</param-name>
+            <param-value>100</param-value>
+        </init-param>
+        <!--配置文本长度-->
+        <init-param>
+            <param-name>kaptcha.textproducer.char.length</param-name>
+            <param-value>4</param-value>
+        </init-param>
+        <!--配置文本集合，验证码值从此集合中获取(如果使用中文验证码,必须配置字体,否则会出现乱码)-->
+        <init-param>
+            <param-name>kaptcha.textproducer.char.string</param-name>
+            <param-value>一二三四五六七八九</param-value>
+        </init-param>
+        <!--配置使用字体-->
+        <init-param>
+            <param-name>kaptcha.textproducer.font.names</param-name>
+            <param-value>宋体</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Kaptcha</servlet-name>
+        <url-pattern>/kaptcha</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+
+
+    <!--配置Filter类信息-->
+    <filter>
+        <!--Filter别名-->
+        <filter-name>HelloFilter</filter-name>
+        <!--Filter全类名-->
+        <filter-class>com.filter.HelloFilter</filter-class>
+    </filter>
+    <!--Filter的映射信息-->
+    <filter-mapping>
+        <!--指定Filter-->
+        <filter-name>HelloFilter</filter-name>
+        <!--过滤请求-->
+        <url-pattern>/jsp/filter.jsp</url-pattern>
+    </filter-mapping>
+
+    <!--测试Filter 链-->
+    <filter>
+        <filter-name>BFilter</filter-name>
+        <filter-class>com.filter.BFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>BFilter</filter-name>
+        <!--精准匹配(指定要拦截的页面)-->
+        <!-- <url-pattern>/jsp/filter.jsp</url-pattern>-->
+        <!--路径匹配(拦截路径jsp下的所有页面)-->
+        <!--<url-pattern>/jsp/*</url-pattern>-->
+        <!--模型匹配(拦截所有.jsp的页面)-->
+        <!-- <url-pattern>*.jsp</url-pattern>-->
+        <!--拦截静态资源(拦截jpg图片)-->
+        <!--<url-pattern>*.jpg</url-pattern>-->
+        <url-pattern>/jsp/404.jsp</url-pattern>
+        <dispatcher>ERROR</dispatcher>
+    </filter-mapping>
+
+    <!--配置Filter url-pattern配置-->
+    <filter>
+        <filter-name>AFilter</filter-name>
+        <filter-class>com.filter.AFilter</filter-class>
+        <init-param>
+            <param-name>username</param-name>
+            <param-value>李四</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>AFilter</filter-name>
+        <!--精准匹配(指定要拦截的页面)-->
+       <!-- <url-pattern>/jsp/filter.jsp</url-pattern>-->
+        <!--路径匹配(拦截路径jsp下的所有页面)-->
+      <!--<url-pattern>/jsp/*</url-pattern>-->
+        <!--模型匹配(拦截所有.jsp的页面)-->
+       <!-- <url-pattern>*.jsp</url-pattern>-->
+        <!--拦截静态资源(拦截jpg图片)-->
+        <!--<url-pattern>*.jpg</url-pattern>-->
+        <url-pattern>/jsp/filter2.jsp</url-pattern>
+    </filter-mapping>
+
+    <!--定义全局错误页面-->
+    <error-page>
+        <error-code>500</error-code>
+        <location>/jsp/500.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/jsp/404.jsp</location>
+    </error-page>
+
+    <!--配置全局监听器-->
+    <listener>
+        <!--配置全类名-->
+        <listener-class>com.listener.RequestLifeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.ApplicationLifeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.SessionLifeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.RequestAttributeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.ContextAttributeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.SessionAttrButeListener</listener-class>
+    </listener>
 </web-app>

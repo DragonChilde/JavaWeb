@@ -2420,5 +2420,806 @@ JSP的标准标签库(里面有很多的标签可以使用),极大的简化开�
 ## 生命周期 ##
 
 - 创建:第一次用session会创建一个新的session
+	1. 第一次获取
+		- html(使用servletrequest)
+		- jsp(已经内置session获取好了)
 - 销毁:
 	1. 默认30分钟后session销毁
+	2. 手动设置session多少秒后过期session.setMaxInactiveInterval(3)
+	3. 使session立即失效session.invalidate()
+		1. 所以新的会话获取session是新的,和cookie的生命周期有关系.浏览器打开关闭开启新会话并不会导致之前session销毁.只是找不到之前的session
+
+## cookie被禁用 ##
+
+导致会话控制失效,使用url重写
+
+当cookie被禁用,可以使用url重写(把要访问的地址动态加上jessionid)
+
+	<%--Url重写--%>
+	<%--http://localhost:8080/javaweb/session;jsessionid=79F5E6DBB07C62742BF7033FBDB17352?method=add--%>
+	<a href="<%=response.encodeRedirectURL(request.getContextPath()+"/session?method=add")%>">去其它页面获取数据</a>
+	<%--JSTL可以替代value指定要重写哪个url     /代表当前--%>
+	<%--http://localhost:8080/javaweb/session;jsessionid=79F5E6DBB07C62742BF7033FBDB17352?method=add--%>
+	<a href="<c:url value="/session?method=add"></c:url>">去其它页面获取数据</a>
+	//response.encodeURL()使URL包含sessionID，如果你需要使用重定向，可以使用 response.encodeRedirectURL()来对URL进行编码。encodeURL()及encodeRedirectedURL()方法首先判断cookie是否被浏览器支持；如果支持，则参数URL被原样返回，否则把jsessionid带上传值
+
+## session的活化和钝化 ##
+
+- 现象:服务器关闭重新启动,只要浏览器没关,还是能获取到session里面的内容
+- 钝化:服务器关闭以后,会将session(序列化)保存硬盘中.可以在work/当前项目下观察 SESSION.ser
+- 活化:服务器再启动时,把之前的序列化好的文件加载进来.就会再次加载之前保存的session SESSION.ser包含了session域中的所有内容
+
+session域中的对象要能同session一起钝化到磁盘中必须实现序列化接口**Serializable**
+
+	<%
+	    session.setAttribute("id","100");	
+	    session.setAttribute("user",new User("张三"));	
+	%>
+
+	id:${id}		//因为String类型已经实现Serializable接口,重启可以正常获取
+	user name is : ${user.username}		//如没有实现Serializable接口,重启后无法获取
+
+	//类必须实现Serializable接口才可钝化到磁盘中,否则服务器重启无法保存进文件SESSION.ser
+	public class User implements Serializable{
+		....
+	}
+
+## 表单重复提交 ##
+
+多次提交了相同内容的表单
+
+1. 数据库多次保存相同数据
+2. 安全问题
+3. 服务器性能
+
+HTTP无状态协议
+
+因为,每次HTTP请求过来都会创建一个新的链接TCP
+
+1. 成功以后,直接刷新页面(每次刷新就是重复上一次请求)
+	
+	解决:将转发改为重定向即可
+
+2. 网速服务性能...,导致处理请求慢.狂点注册
+
+	解决:将提交按钮点击后设为不可用,然后手动提交表单
+
+3. 用户成功以后点击后退,再次提交
+
+	解决:采用令牌机制(token). 每次提交表单,带上令牌.服务器验证口令,口令合法处理请求,口令不合法,打回(不一致,用过就删除)
+
+# 验证码 #
+
+## Pom ##
+	 <dependency>
+        <groupId>com.github.penggle</groupId>
+        <artifactId>kaptcha</artifactId>
+        <version>2.3.2</version>
+    </dependency>
+
+## web.xml ##
+
+    <servlet>
+        <servlet-name>Kaptcha</servlet-name>
+        <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+        <!--初始化验证码参数-->
+        <!--配置验证图片宽度-->
+        <init-param>
+            <param-name>kaptcha.image.width</param-name>
+            <param-value>200</param-value>
+        </init-param>
+        <!--配置验证图片高-->
+        <init-param>
+            <param-name>kaptcha.image.height</param-name>
+            <param-value>100</param-value>
+        </init-param>
+        <!--配置文本长度-->
+        <init-param>
+            <param-name>kaptcha.textproducer.char.length</param-name>
+            <param-value>4</param-value>
+        </init-param>
+        <!--配置文本集合，验证码值从此集合中获取(如果使用中文验证码,必须配置字体,否则会出现乱码)-->
+        <init-param>
+            <param-name>kaptcha.textproducer.char.string</param-name>
+            <param-value>一二三四五六七八九</param-value>
+        </init-param>
+        <!--配置使用字体-->
+        <init-param>
+            <param-name>kaptcha.textproducer.font.names</param-name>
+            <param-value>宋体</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Kaptcha</servlet-name>
+        <url-pattern>/kaptcha</url-pattern>
+    </servlet-mapping>
+
+## jsp ##
+
+	<img src="<%=request.getContextPath()+"/kaptcha"%>" />	//显示验证码
+	${KAPTCHA_SESSION_KEY}		//获取验证码
+
+Kaptcha详细配置说明:<a href="https://www.jianshu.com/p/a3525990cd82">点击这里</a>
+
+# 双精度问题 #
+
+  	/*大整数运算*/
+    int i =1;
+    for (int j = 1; j < 100; j++) {
+       i*=j;
+    }
+    //结果为0,无法运算
+    System.out.println(i);
+
+
+	/*浮点数运算*/
+    System.out.println(0.01 * 0.07);
+	/*结果为:7.000000000000001E-4*/
+
+**解决以上问题使用BigDecimal**
+
+	int i =1;
+    BigDecimal bigDecimal = new BigDecimal(i);
+    for (int j = 1; j < 100; j++) {
+        bigDecimal = bigDecimal.multiply(new BigDecimal(j));
+    }
+    System.out.println(bigDecimal);
+
+   	double a = 0.01;
+    double b = 0.07;
+    BigDecimal bigDecimal1 = new BigDecimal(a);
+    BigDecimal bigDecimal2 = new BigDecimal(b);
+    System.out.println(bigDecimal1.multiply(bigDecimal2));
+
+# Filter过滤器 #
+**作用:过滤请求和响应**
+
+WEB服务器的三大组件
+
+- **Servlet**
+- **Filter**
+- **Listener**
+
+Filter是用来执行过滤任务的一个对象,作用于:
+1. 请求一个资源(动态资源Servlet,JSP,静态资源)
+2. 来自一个资源的响应
+3. 两个都可以
+
+Filter过滤请求和响应
+
+1. Filter可以拦截请求(request),可以修改请求头,请求内容
+2. Filter可以拦截来自服务端的响应(response),可以修改响应头和响应内容
+3. 放行请求
+
+## Filter-HelloWorld ##
+
+**Filter类**
+
+	/*创建Filter的实现类
+	* 是来过滤所有要访问页面的请求
+	* 服务端的三大组件,运行在服务器上,服务器调用
+	* */
+	public class HelloFilter implements Filter {
+	
+	    /*初始化方法*/
+	    @Override
+	    public void init(FilterConfig filterConfig) throws ServletException {
+	
+	    }
+	
+	    /*执行过滤方法*/
+	    @Override
+	    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+	        String money = (String)servletRequest.getParameter("money");
+	        System.out.println(money);
+	        if (money != null){
+				 //请求放行(程序不清楚是否还有其它过滤器,因此这里使用doFilter方法放行)
+	            filterChain.doFilter(servletRequest,servletResponse);
+	        } else {
+	            servletResponse.getWriter().print("no money no talk!");
+	        }
+	    }
+	
+	
+	    /*销毁方法*/
+	    @Override
+	    public void destroy() {
+	
+	    }
+	}
+
+**web.xml**
+
+	 <!--配置Filter类信息-->
+    <filter>
+        <!--Filter别名-->
+        <filter-name>HelloFilter</filter-name>
+        <!--Filter全类名-->
+        <filter-class>com.filter.HelloFilter</filter-class>
+    </filter>
+    <!--Filter的映射信息-->
+    <filter-mapping>
+        <!--指定Filter-->
+        <filter-name>HelloFilter</filter-name>
+        <!--过滤请求-->
+        <url-pattern>/jsp/filter.jsp</url-pattern>
+    </filter-mapping>
+
+**JSP**
+
+	<a href="./jsp/filter.jsp?money=1">有钱可以进,过滤器</a><br/>		//带有参数成功访问
+	<a href="./jsp/filter.jsp">没钱不可进,过滤器</a>					//没带参数不能访问
+
+## Filter执行原理 ##
+
+![](http://120.77.237.175:9080/photos/javaweb/16.png)
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        String money = (String)servletRequest.getParameter("money");
+        System.out.println(money);
+        if (money != null){
+            //请求放行(程序不清楚是否还有其它过滤器,因此这里使用doFilter方法放行)
+            System.out.println("放行前一");		//1.放行前一
+            filterChain.doFilter(servletRequest,servletResponse);	//2.返回页面(放行后二)
+            System.out.println("放行后三");		//3.再返回到Filter(放行后三),然后才response给浏览器
+        } else {
+            servletResponse.getWriter().print("no money no talk!");
+        }
+    }
+
+## Filter生命周期 ##
+
+从创建到销毁的过程
+
+1. 创建-初始化(init)
+
+	服务器已启动(项目加载进服务器),创建Filter对象,并执行初始化.单例多线程
+
+2. 每次拦截都执行
+
+	foFilter()方法
+
+3. 销毁
+
+	项目从服务器中卸载(destory)
+
+## Filter url-pattern配置 ##
+
+1. 精确匹配
+
+	写要拦截的资源的详细路径	/hello.jsp	/page/a.jsp
+2. 路径匹配
+
+	拦截所有访问(路径名)下的资源	/*代表拦截所有
+3. 后缀匹配:*.后缀名
+
+	所有以给定的后缀结尾的,都拦截
+
+Filter能拦截哪些资源
+
+  	<!--配置Filter url-pattern配置-->
+    <filter>
+        <filter-name>AFilter</filter-name>
+        <filter-class>com.filter.AFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AFilter</filter-name>
+        <!--精准匹配(指定要拦截的页面)-->
+       <!-- <url-pattern>/jsp/filter.jsp</url-pattern>-->
+        <!--路径匹配(拦截路径jsp下的所有页面)-->
+      <!--  <url-pattern>/jsp/*</url-pattern>-->
+        <!--模型匹配(拦截所有.jsp的页面)-->
+       <!-- <url-pattern>*.jsp</url-pattern>-->
+        <!--拦截所有以jpg为后缀的图片资源-->
+        <url-pattern>*.jpg</url-pattern>
+    </filter-mapping>
+
+**如果需要拦截指定路径下的静态资源,通过在doFilter()的request获取后缀来进行拦截**
+
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        System.out.println("this is AFilter");
+
+        /*转化成HttpServletRequest会多了许多方法*/
+        HttpServletRequest httpServletRequest = (HttpServletRequest)servletRequest;
+        /*获取访问路径*/
+        String uri = httpServletRequest.getRequestURI();
+        /*获取完整的访问路径*/
+        StringBuffer url = httpServletRequest.getRequestURL();
+        System.out.println(uri);     /*/javaweb/jsp/filter.jsp*/
+        System.out.println(url);     /*http://localhost:8080/javaweb/jsp/filter.jsp*/
+        if (uri.endsWith("jpg"))      //如果是以jpg为后缀进行拦截
+        {
+            System.out.println("ok");
+        } else {
+            filterChain.doFilter(servletRequest,servletResponse);
+        }
+    }
+
+## Filter放行之前写中文乱码原因 ##
+
+![](http://120.77.237.175:9080/photos/javaweb/17.png)
+
+	/*一*/
+	servletResponse.getWriter().print("hello world");		//页面中文乱码
+    filterChain.doFilter(servletRequest,servletResponse);
+	/*二*/
+	servletResponse.getWriter().print("你好");				//页面和打印的中文乱码
+    filterChain.doFilter(servletRequest,servletResponse);
+	/*三*/
+    filterChain.doFilter(servletRequest,servletResponse);	//没有乱码
+	servletResponse.getWriter().print("你好");
+
+**结论:所有请求都是用的同一个request和response,在过滤器放行之前,已经使用response返回根本没有对页面进行编码设置,所以就会出现乱码,而JSP页面在编译时,已经在service方法里最先进行了编码设置**
+
+## Filter Config ##
+
+    public void init(FilterConfig filterConfig) throws ServletException {
+        //filterConfig是封装filter配置信息的对象
+        String filterName = filterConfig.getFilterName();       //获取别名
+        System.out.println(filterName);
+        //filter初始化参数
+        String username = filterConfig.getInitParameter("username");
+        System.out.println(username);
+        //获取web初始化参数
+        ServletContext servletContext = filterConfig.getServletContext();
+        String user = servletContext.getInitParameter("user");
+        System.out.println(user);
+
+        System.out.println(servletContext);
+
+    }
+
+## Filter链 ##
+
+在AFilter前,配置多个BFilter,查看执行顺序
+
+	this is B Filter 3
+	this is A Filter 1
+	filter jsp
+	this is A Filter 2
+	this is B Filter 4
+
+![](http://120.77.237.175:9080/photos/javaweb/18.png)
+
+
+## dispatcher配置 ##
+
+告诉服务器都拦截哪些方式到达的资源
+
+- FORWARD:拦截转发过来的,转发到这个地址,会被拦截
+- INCLUDE:拦截包含的,包含这个地址的会被拦截,拦截动态包含
+- REQUEST:直接请求的,直接请求这个地址会被拦截.默认的.get,post
+- ERROR:发生错误的,去全局配置的一个错误页面会被拦截,不是errorPage指向的页面(转发的到) 指的是全局配配置
+
+**情况一**
+
+	 <filter>
+        <filter-name>BFilter</filter-name>
+        <filter-class>com.filter.BFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <url-pattern>/jsp/filter2.jsp</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+配置了FORWARD,只在页面进行重定向才进行拦截,正常request访问不拦截
+
+	<!--filter3.jsp页面定义-->
+	<jsp:forward page="filter2.jsp"></jsp:forward>
+
+**情况二**
+
+	 <filter>
+        <filter-name>BFilter</filter-name>
+        <filter-class>com.filter.BFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <url-pattern>/jsp/filter2.jsp</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+配置了REQUEST,只在正常request访问才进行拦截,重定向才不拦截
+
+	<!--filter3.jsp页面定义-->
+	<jsp:forward page="filter2.jsp"></jsp:forward>
+
+**情况三**
+
+    <filter>
+        <filter-name>BFilter</filter-name>
+        <filter-class>com.filter.BFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <url-pattern>/jsp/filter2.jsp</url-pattern>
+        <dispatcher>INCLUDE</dispatcher>
+    </filter-mapping>
+
+配置了INCLUDE,只在当前页面有对指定页面包含才会拦截,其他情况不拦截,以下当访问filter3.jsp会进行拦截(注意:此拦截只针对JSP的动态包含,不包括静态包含:@include)
+
+	<!--filter3.jsp页面定义-->
+	<jsp:include page="filter2.jsp"></jsp:include>
+
+**情况四**
+
+	 <filter>
+        <filter-name>BFilter</filter-name>
+        <filter-class>com.filter.BFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <url-pattern>/jsp/404.jsp</url-pattern>
+        <dispatcher>ERROR</dispatcher>
+    </filter-mapping>
+	 <!--定义全局错误页面-->
+	<error-page>
+        <error-code>404</error-code>
+        <location>/jsp/404.jsp</location>
+    </error-page>
+
+意思是HTTP请求响应的状态码只要是400、404、500三种状态码之一（比如访问了一个不存在的页面，就是404），容器就会将请求转发到/jsp/404.jsp下，这就触发了一次error，走进了DispatchFilter。注意一点的是，虽然把请求转发到/jsp/404.jsp是一次forward的过程，但是我试了一下，配置成<dispatcher>FORWARD</dispatcher>并不会走DispatchFilter这个过滤器。
+
+这四种dispatcher方式可以单独使用，也可以组合使用，配置多个<dispatcher></dispatcher>就好了。
+
+
+# Listener 监听器#
+
+监听器:监听事件的发生,监听器-->监听事件,事件发生后触发相应的处理函数
+
+- ServletRequest,请求对象
+- ServletContext,代表当前整个web应用.一个ServletContext
+- HttpSession, session对象
+
+## 八个监听器 ##
+
+	1. 生命周期监听器.监听三个对象的生命周期(创建到销毁)
+
+		ServletRequestListener:requestDestroyed(请求结束就销毁),requestInitialized(发送请求)
+		ServletContextListner:项目加载进服务器创建对象,项目卸载销毁
+		HttpSessionListener:新会话进来的时候创建对象,session失效(强制失效,超时)销毁
+
+	2. 属性监听器.监听三个对象.监听域对象中属性的增(setAttribute()) 删(removeAttribute())改(setAttribute())
+
+		ServletRequestAttributeListener
+		ServletContextAttributeListener
+		HttpSessionAttributeListener
+
+	3. session固有监听器
+
+		HttpSessionActivationListener	监听session活化钝化
+			监听session中某个对象的钝化和活化.这个javaBean,对象,类只需要实现HttpSessionActivationListener接口即可
+		HttpSessionBindingListener	监听一个对象是否绑定到session中(保存在session中)
+			监听一个对象是否绑定到sessionk.这个类来实现HttpSessionBindingListener接口
+			绑定:保存在session中就叫绑定
+			解绑:session中移除就是解绑
+
+### 生命周期监听器 ###
+
+**WEB.xml**
+
+	<!--配置全局监听器-->
+    <listener>
+        <!--配置全类名-->
+        <listener-class>com.listener.RequestLifeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.ApplicationLifeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.SessionLifeListener</listener-class>
+    </listener>
+
+### 属性监听器 ###
+
+**web.xml**
+
+    <listener>
+        <listener-class>com.listener.RequestAttributeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.ContextAttributeListener</listener-class>
+    </listener>
+    <listener>
+        <listener-class>com.listener.SessionAttrButeListener</listener-class>
+    </listener>
+
+**ServletRequestAttributeListener**
+
+	public class RequestAttributeListener implements ServletRequestAttributeListener {
+	    @Override
+	    public void attributeAdded(ServletRequestAttributeEvent srae) {
+	        //新增的Key
+	        String name = srae.getName();
+	        //新增的value
+	        Object value = srae.getValue();
+	        System.out.println("request新增的属性名:"+name);
+	        System.out.println("request新增的属性值:"+value);
+	    }
+	
+	    @Override
+	    public void attributeRemoved(ServletRequestAttributeEvent srae) {
+	        //移除的Key
+	        String name = srae.getName();
+	        //移除的value
+	        Object value = srae.getValue();
+	        System.out.println("request删除的属性名:"+name);
+	        System.out.println("request删除的属性值:"+value);
+	    }
+	
+	    @Override
+	    public void attributeReplaced(ServletRequestAttributeEvent srae) {
+	        //修改的Key
+	        String name = srae.getName();
+	        //修改前的旧value
+	        Object value = srae.getValue();
+	        ServletContext servletContext = srae.getServletContext();
+	        Object attribute = servletContext.getAttribute(name);
+	        System.out.println("request修改的属性名:"+name);
+	        System.out.println("request修改前的属性值:"+value);
+	        System.out.println("request修改后的属性值:"+attribute);
+	    }
+	}
+
+**JSP**
+
+	request.setAttribute("user","111111");
+    Thread.sleep(100);
+    request.setAttribute("user","222222");
+    Thread.sleep(100);
+    request.removeAttribute("user");
+
+**结果**
+
+	request新增的属性名:user
+	request新增的属性值:111111
+	request修改的属性名:user
+	request修改前的属性值:111111
+	request修改后的属性值:222222
+	request删除的属性名:user
+	request删除的属性值:222222
+
+**ServletContextAttributeListener和HttpSessionAttributeListener类的使用与上同理**
+
+### session固有监听器 ###
+
+	/**
+		监听student对象的钝化和活化
+	 对象要和session一起活化钝化必须实现序列化接口
+	 */
+	public class Student implements HttpSessionActivationListener, Serializable {
+	
+	
+	    private static final long serialVersionUID = 2296288538308859889L;
+	    private String username;
+	
+	    public Student() {
+	    }
+	
+	    public Student(String username) {
+	        this.username = username;
+	    }
+	
+	    public String getUsername() {
+	        return username;
+	    }
+	
+	    public void setUsername(String username) {
+	        this.username = username;
+	    }
+	
+	    @Override
+	    public String toString() {
+	        return "Student{" +
+	                "username='" + username + '\'' +
+	                '}';
+	    }
+	
+	    @Override
+	    public void sessionWillPassivate(HttpSessionEvent se) {
+	
+	        System.out.println("session 钝化");
+	
+	    }
+	
+	    @Override
+	    public void sessionDidActivate(HttpSessionEvent se) {
+	        System.out.println("session 活化");
+	        HttpSession session = se.getSession();
+	        Object username = session.getAttribute("usename");
+	        System.out.println("student username is:"+username);
+	    }
+	}
+
+初次访问对应的bean的页面是没有生效的,只有在服务器关闭时才会进行session钝化监听操作,当服务器再启动时会进行活化监听操作(具体什么是钝化和活化可看本页面章节9.9)
+
+	/*
+	* 	监听User的绑定和解绑
+	对象要和session一起绑定和解绑必须实现序列化接口
+	* */
+	public class User implements HttpSessionBindingListener, Serializable {
+	
+	    private static final long serialVersionUID = 8794577266998791489L;
+	    private String name;
+	
+	    public User() {
+	    }
+	
+	    public User(String name) {
+	        this.name = name;
+	    }
+	
+	    public String getName() {
+	        return name;
+	    }
+	
+	    public void setName(String name) {
+	        this.name = name;
+	    }
+	
+	    @Override
+	    public String toString() {
+	        return "User{" +
+	                "name='" + name + '\'' +
+	                '}';
+	    }
+	
+	    /*Use类的对象绑定到session中*/
+	    @Override
+	    public void valueBound(HttpSessionBindingEvent event) {
+	        System.out.println("session 绑定");
+	        //对象绑定在session中使用的Key
+	        String name = event.getName();
+	        //绑定在session中的具体对象
+	        Object value = event.getValue();
+	        System.out.println("session name is "+name+" value is "+value);
+	
+	    }
+	
+	    /*User类的对象从session中移队*/
+	    @Override
+	    public void valueUnbound(HttpSessionBindingEvent event) {
+	        System.out.println("session解绑");
+	        //对象绑定在session中使用的Key
+	        String name = event.getName();
+	        //绑定在session中的具体对象(监控的对象,User类的对象)
+	        Object value = event.getValue();
+	        System.out.println("session name is "+name+" value is "+value);
+	
+	    }
+	}
+
+
+**jsp**
+
+    User user = new User("李四");
+    /*给session中保存User对象(绑定)*/
+    session.setAttribute("user",user);
+    Thread.sleep(100);
+    //移除
+    session.removeAttribute("user");
+
+**结果**
+	
+	session 绑定
+	session name is user value is User{name='李四'}
+	session新增的属性名:user
+	session新增的属性值:User{name='李四'}
+	session解绑
+	session name is user value is User{name='李四'}
+
+**HttpSessionActivationListener和HttpSessionBindingListener都不需要在web.xml进行配置,让类继承就可以了,当session使用了当类时,就会触发到监听器**
+
+
+# 国际化i18n #
+
+java中的三个类
+
+- **ResourceBundle**:资源绑定,管理资源文件(要动态获取的内容)
+- **Locale**:代表当前区域(中国)
+- **XXXFormat**:
+	- **DateFormat**:
+
+
+		    public void test1()
+		    {
+		        //获取默认区域信息ZH_CN     EN_US
+		        //一个Locale由语言_国家
+		        //Locale本身存储一些区域
+		        Locale us = Locale.US;
+		        Locale cn = Locale.CHINA;
+		        Locale korea = Locale.KOREA;
+		
+		
+		        DateFormat dateInstance1 = DateFormat.getDateInstance(DateFormat.FULL, cn);
+		        DateFormat dateInstance2 = DateFormat.getDateInstance(DateFormat.LONG, cn);
+		        DateFormat dateInstance3 = DateFormat.getDateInstance(DateFormat.MEDIUM, cn);
+		        DateFormat dateInstance4 = DateFormat.getDateInstance(DateFormat.SHORT, cn);
+		        DateFormat dateInstance5 = DateFormat.getDateInstance(DateFormat.DEFAULT, cn);
+		
+		        String format1 = dateInstance1.format(new Date());
+		        String format2 = dateInstance2.format(new Date());
+		        String format3 = dateInstance3.format(new Date());
+		        String format4 = dateInstance4.format(new Date());
+		        String format5 = dateInstance5.format(new Date());
+		        
+		        System.out.println(format1);
+		        System.out.println(format2);
+		        System.out.println(format3);
+		        System.out.println(format4);
+		        System.out.println(format5);
+		
+				/**
+					2020年3月13日 星期五
+					2020年3月13日
+					2020-3-13
+					20-3-13
+					2020-3-13
+				**/
+		    }
+
+
+		    @Test
+		    public void test2()
+		    {
+		        //写资源文件ResourceBundle来管理的.可以根据不同国家获取不同的值
+		        //.properties 文件名:基础名_语言_国家.properties
+		        //如果是中国 i18n_zh_CN.properties
+		        //如果是美国 i18n_en_US.properties
+		        //将要显示的信息放在这些文件中,然后通过文件动态获取.这些文件放在类路径下(src)
+		        Locale us = Locale.US;
+		        Locale china = Locale.CHINA;
+		        ResourceBundle bundle = ResourceBundle.getBundle("i18n", us);
+		        String login = bundle.getString("login");
+		        System.out.println(login);
+		    }
+	
+![](http://120.77.237.175:9080/photos/javaweb/19.png)
+
+## 在JSP页面使用国际化 ##
+
+	<%
+	    /*定义特定的语言区域*/
+	    Locale locale = new Locale("en","US");
+	    ResourceBundle bundle = ResourceBundle.getBundle("i18n", locale);
+	    String login = bundle.getString("login");
+	    pageContext.setAttribute("login",login);
+	%>
+	${login}
+
+## 使用标签进行国际化 ##
+	
+	/**导入标签库**/
+	<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+	<%--传区域全名 语言_国家--%>
+	<fmt:setLocale value="${param.lan}"/>
+	<%--设置资源的基础名--%>
+	<fmt:setBundle basename="i18n"/>
+	<%--获取资源文件中的信息--%>
+	<fmt:message key="success" />
+	<fmt:formatDate value="<%=new Date()%>" dateStyle="FULL" timeStyle="FULL" type="both"/>
+	<%--成功 2020年3月13日 星期五 下午05时29分17秒 CST--%>
+	<%--success Friday, March 13, 2020 5:29:28 PM CST--%>
+
+	<br/>
+	<fmt:message key="message">
+	    <fmt:param>张三</fmt:param>
+	    <fmt:param><fmt:formatDate value="<%=new Date()%>" dateStyle="FULL" timeStyle="FULL" type="both"/></fmt:param>
+	</fmt:message>
+	/**
+		welcome 张三 到来,time is Friday, March 13, 2020 5:44:25 PM CST
+		欢迎 张三 到来,现在是本地时间 2020年3月13日 星期五 下午05时49分31秒 CST
+	**/
+
+**语言包定义**
+
+**i18n_en_US.properties**
+
+	login=login
+	success=success
+	message=welcome {0} 到来,time is {1}
+
+**i18n_zh_CN.properties**
+
+	login=登录
+	success=成功
+	message=欢迎 {0} 到来,现在是本地时间 {1}

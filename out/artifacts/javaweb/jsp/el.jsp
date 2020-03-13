@@ -75,11 +75,11 @@ pageContext.setAttribute("page","page1");
 jstl:<%=pageContext.getAttribute("page1")%><br>
 el:${page1}--%>
 
-<%--el中的其它对象 pageContext可以出jsp页面其它的隐含对象--%>
+<%--el中的其它对象 pageContext可以出jsp页面其它的隐含对象,然后可以取出所有隐含对象中的属性了--%>
 jstl:<%=pageContext.getRequest().getScheme()%>
 el:${pageContext.request.scheme}
 
-<%pageContext.forward("/jsp/error.jsp");%>
+
 <%--HTTP相关 5个--%>
 param (封装了所有的请求参数的key-value)对应一个请求参数 request.getParam("username) <br>
 paramValues 对应一组请求参数<br>

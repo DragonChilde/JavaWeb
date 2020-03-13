@@ -1,4 +1,4 @@
-<%--
+<%@ page import="java.math.BigDecimal" %><%--
   Created by IntelliJ IDEA.
   User: Administrator
   Date: 2019/12/12
@@ -42,5 +42,23 @@ GET提交
 </form>
 
 <a href="./encoding">乱码问题</a>
+<a href="./encoding">乱码问题</a>
+
+<br/>
+<hr/>
+<a href="./jsp/filter.jsp?money=1">有钱可以进,过滤器</a><br/>
+<a href="./jsp/filter.jsp">没钱不可进,过滤器</a>
+
+
+<img src="aaa.jpg" />
+
+<hr/>
+
+<a href="./jsp/listener.jsp">监听器测试</a>
+<hr/>
+
+<a href="./jsp/lan.jsp">国际化</a>
+
+
 </body>
 </html>
