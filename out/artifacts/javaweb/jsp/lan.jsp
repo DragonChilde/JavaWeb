@@ -30,6 +30,7 @@ ${login}
 <%--success Friday, March 13, 2020 5:29:28 PM CST--%>
 <br/>
 <fmt:message key="message">
+    <%--设置参数--%>
     <fmt:param>张三</fmt:param>
     <fmt:param><fmt:formatDate value="<%=new Date()%>" dateStyle="FULL" timeStyle="FULL" type="both"/></fmt:param>
 </fmt:message>

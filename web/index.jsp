@@ -59,6 +59,8 @@ GET提交
 
 <a href="./jsp/lan.jsp">国际化</a>
 
+<hr/>
+<a href="./download">文件下载</a>>
 
 </body>
 </html>
